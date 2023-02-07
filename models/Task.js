@@ -17,12 +17,12 @@ const TaskSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-  user_id: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  executer_id: {
+  executer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
