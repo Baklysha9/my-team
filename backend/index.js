@@ -3,10 +3,8 @@ import mongoose from 'mongoose'
 import { loginValidation, registerValidation } from './validation/auth.js'
 import { taskCreateValidation } from './validation/task.js'
 
-import checkAuth from './utils/checkAuth.js'
-import * as userController from './controllers/userController.js'
-import * as taskController from './controllers/taskController.js'
-import handleValidationErrors from './utils/handleValidationErrors.js'
+import { checkAuth, handleValidationErrors } from './utils/index.js'
+import { userController, taskController } from './controllers/index.js'
 import multer from 'multer'
 
 mongoose
@@ -35,15 +33,15 @@ app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
   })
 })
 
-  .app.get('/auth/me', checkAuth, userController.getMe)
+app.get('/auth/me', checkAuth, userController.getMe)
 app.post('/auth/login', loginValidation, handleValidationErrors, userController.login)
 app.post('/auth/register', registerValidation, handleValidationErrors, userController.register)
 
-app.post('/tasks', checkAuth, taskCreateValidation, taskController.create)
+app.post('/tasks', checkAuth, taskCreateValidation, handleValidationErrors, taskController.create)
 app.get('/tasks/:id', checkAuth, taskController.getOne)
 app.get('/tasks', checkAuth, taskController.getAll)
 app.delete('/tasks/:id', checkAuth, taskController.remove)
-app.patch('/tasks/:id', checkAuth, taskController.update)
+app.patch('/tasks/:id', checkAuth, taskCreateValidation, handleValidationErrors, taskController.update)
 
 app.listen(9999, (err) => {
   if (err) {
