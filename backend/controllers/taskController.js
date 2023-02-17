@@ -1,4 +1,7 @@
 import TaskModel from '../models/Task.js'
+import pkg from 'lodash';
+
+
 
 export const create = async (req, res) => {
   try {
@@ -8,8 +11,8 @@ export const create = async (req, res) => {
       status: req.body.status,
       image: req.body.image,
       user: req.userId,
-      executer: req.body.executer || req.userId
-
+      executer: req.body.executer || req.userId,
+      project: req.body.project || 'без проекта'
     })
 
     const task = await doc.save()
@@ -22,20 +25,28 @@ export const create = async (req, res) => {
   }
 }
 
+export const getLastProject = async (req, res) => {
+  const {uniq} = pkg;
+  try {
+    const tasks = await TaskModel.find().populate('user').populate('executer').exec();
+
+    const projects = tasks.map((obj) => obj.project).flat()
+    const result = uniq(projects);
+    res.json(result);
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({
+      message: 'Не удалось получить проекты'
+    })
+  }
+}
+
 export const getOne = async (req, res) => {
   try {
     const taskId = req.params.id
     TaskModel.findOne({
       _id: taskId
-    },
-    (err, doc) => {
-      if (err) {
-        console.log(err)
-        return res.status(500).json({
-          message: 'Не удалось вернуть задачу'
-        })
-      }
-
+    }).populate('user').populate('executer').then((doc) => {
       if (!doc) {
         return res.status(404).json({
           message: 'Задача не найдена'
@@ -54,7 +65,7 @@ export const getOne = async (req, res) => {
 
 export const getAll = async (req, res) => {
   try {
-    const posts = await TaskModel.find().populate('user').exec()
+    const posts = await TaskModel.find().populate('user').populate('executer').exec()
     res.json(posts)
   } catch (err) {
     console.log(err)

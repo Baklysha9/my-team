@@ -6,36 +6,43 @@ import Grid from '@mui/material/Grid';
 import { Post } from '../components/Post';
 import { TagsBlock } from '../components/TagsBlock';
 import { CommentsBlock } from '../components/CommentsBlock';
+import axios from "axios";
+import {baseURL} from "../constants/constants";
+import {useDispatch, useSelector} from "react-redux";
+import {fetchProjects, fetchTasks} from "../redux/slices/tasks";
 
 export const Home = () => {
+    const dispatch = useDispatch();
+    const {tasks, projects} = useSelector(state => state.tasks);
+
+    const isTasksLoading = tasks.status === 'loading';
+    const isProjectsLoading = projects.status === 'loading';
+
+    React.useEffect(() => {
+        dispatch(fetchTasks())
+        dispatch(fetchProjects())
+    }, [])
   return (
     <>
-      <Tabs style={{ marginBottom: 15 }} value={0} aria-label="basic tabs example">
-        <Tab label="Новые" />
-        <Tab label="Популярные" />
-      </Tabs>
+    <h2>Задачи:</h2>
       <Grid container spacing={4}>
-        <Grid xs={8} item>
-          {[...Array(5)].map(() => (
+        <Grid xs={12} md={8} item>
+          {(isTasksLoading ? [...Array(5)]: tasks.items).map((obj, index) =>
+              isTasksLoading ? (<Post key={index} isLoading={true}/>):
+              (
             <Post
-              id={1}
-              title="Roast the code #1 | Rock Paper Scissors"
-              imageUrl="https://res.cloudinary.com/practicaldev/image/fetch/s--UnAfrEG8--/c_imagga_scale,f_auto,fl_progressive,h_420,q_auto,w_1000/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/icohm5g0axh9wjmu4oc3.png"
-              user={{
-                avatarUrl:
-                  'https://res.cloudinary.com/practicaldev/image/fetch/s--uigxYVRB--/c_fill,f_auto,fl_progressive,h_50,q_auto,w_50/https://dev-to-uploads.s3.amazonaws.com/uploads/user/profile_image/187971/a5359a24-b652-46be-8898-2c5df32aa6e0.png',
-                fullName: 'Keff',
-              }}
-              createdAt={'12 июня 2022 г.'}
-              viewsCount={150}
-              commentsCount={3}
-              tags={['react', 'fun', 'typescript']}
+              _id={obj._id}
+              title={obj.title}
+              imageUrl={obj.image}
+              user={obj.user}
+              createdAt={obj.createdAt}
+              project={obj.project}
               isEditable
             />
           ))}
         </Grid>
-        <Grid xs={4} item>
-          <TagsBlock items={['react', 'typescript', 'заметки']} isLoading={false} />
+        <Grid xs={12} md={4} item>
+          <TagsBlock items={projects.items } isLoading={isProjectsLoading} />
           <CommentsBlock
             items={[
               {
@@ -57,6 +64,6 @@ export const Home = () => {
           />
         </Grid>
       </Grid>
-    </>
+        </>
   );
 };

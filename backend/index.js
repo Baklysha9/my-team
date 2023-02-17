@@ -2,6 +2,7 @@ import express from 'express'
 import mongoose from 'mongoose'
 import { loginValidation, registerValidation } from './validation/auth.js'
 import { taskCreateValidation } from './validation/task.js'
+import cors from 'cors';
 
 import { checkAuth, handleValidationErrors } from './utils/index.js'
 import { userController, taskController } from './controllers/index.js'
@@ -25,6 +26,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage })
 
 app.use(express.json())
+app.use(cors())
 
 app.use('/uploads', express.static('uploads'))
 app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
@@ -37,9 +39,11 @@ app.get('/auth/me', checkAuth, userController.getMe)
 app.post('/auth/login', loginValidation, handleValidationErrors, userController.login)
 app.post('/auth/register', registerValidation, handleValidationErrors, userController.register)
 
+app.get('/projects', taskController.getLastProject)
+
 app.post('/tasks', checkAuth, taskCreateValidation, handleValidationErrors, taskController.create)
-app.get('/tasks/:id', checkAuth, taskController.getOne)
-app.get('/tasks', checkAuth, taskController.getAll)
+app.get('/tasks/:id', taskController.getOne)
+app.get('/tasks', taskController.getAll)
 app.delete('/tasks/:id', checkAuth, taskController.remove)
 app.patch('/tasks/:id', checkAuth, taskCreateValidation, handleValidationErrors, taskController.update)
 
